@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>About Us - Webloom.in</title>
+<meta content="Learn about Webloom.in - a modern website design and development company specializing in 3D websites and digital experiences" name="description"/>
+<link href="styles1.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script></head>
+<body>
+<!-- Navigation -->
+<nav class="navbar">
+<div class="nav-container">
+<div class="logo">
+<div class="logo-3d">
+<a href="index.html" style="text-decoration: none; color: inherit;">Webloom.in</a>
+</div>
+</div>
+<ul class="nav-menu">
+<li><a href="index.html#home">Home</a></li>
+<li><a class="active" href="about.html">About</a></li>
+<li><a href="index.html#services">Services</a></li>
+<li><a href="index.html#pricing">Plans</a></li>
+<li><a href="index.html#careers">Careers</a></li>
+<li><a href="index.html#contact">Contact</a></li>
+</ul>
+</div>
+</nav>
+<!-- Hero Section -->
+<section class="about-hero">
+<div class="container">
+<div class="hero-content">
+<h1 class="hero-title">About Us</h1>
+<p class="hero-subtitle">Webloom.in</p>
+<div class="hero-decoration">
+<div class="decoration-element"></div>
+<div class="decoration-element"></div>
+<div class="decoration-element"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Main About Content -->
+<section class="about-main">
+<div class="container">
+<div class="about-content-wrapper">
+<div class="about-intro-section">
+<h2 class="company-name">Webloom.in</h2>
+<p class="company-description">
+                        Webloom.in is a modern website design and development company that helps individuals, startups, and small businesses establish a powerful online presence. We specialize in building high-quality Shopify, WordPress, and custom-coded websites, including 3D websites that bring your brand to life.
+                    </p>
+</div>
+<div class="mission-section">
+<h3 class="section-heading">Our Mission</h3>
+<p class="mission-text">
+                        Our mission is simple — to make professional, beautiful websites affordable and accessible to everyone. Whether you're starting a new business or looking to upgrade your existing site, we offer flexible plans to suit every need:
+                    </p>
+</div>
+<div class="plans-showcase">
+<div class="plan-card tilt-card neon-glow" data-anim-delay="" style="--delay: 1">
+<div class="plan-icon">✅</div>
+<div class="plan-details">
+<h4 class="plan-title">Basic Plan</h4>
+<p class="plan-description">Simple and elegant websites built on Shopify or WordPress</p>
+</div>
+</div>
+<div class="plan-card tilt-card neon-glow" data-anim-delay="" style="--delay: 2">
+<div class="plan-icon">🚀</div>
+<div class="plan-details">
+<h4 class="plan-title">Premium Plan</h4>
+<p class="plan-description">Custom-coded websites with interactive 3D elements</p>
+</div>
+</div>
+<div class="plan-card tilt-card neon-glow" data-anim-delay="" style="--delay: 3">
+<div class="plan-icon">🌐</div>
+<div class="plan-details">
+<h4 class="plan-title">Pro 3D Plan</h4>
+<p class="plan-description">Fully immersive 3D websites for visionary brands</p>
+</div>
+</div>
+</div>
+<div class="values-section">
+<p class="values-text">
+                        At Webloom.in, we believe in creativity, innovation, and delivering value. With a growing team of passionate designers and developers, we are committed to helping businesses grow digitally and leave a lasting impact online.
+                    </p>
+</div>
+<div class="cta-section">
+<div class="cta-icon">📞</div>
+<h3 class="cta-heading">Let's bring your idea to life.</h3>
+<div class="cta-icon">📧</div>
+<p class="cta-text">Contact us today and let your website bloom with Webloom.in!</p>
+<div class="cta-buttons">
+<a class="btn btn-primary" href="index.html#contact">Get Started</a>
+<a class="btn btn-secondary" href="index.html#pricing">View Plans</a>
+</div>
+</div>
+</div>
+<!-- Visual Elements -->
+<div class="about-visual-elements">
+<div class="floating-shape shape-1"></div>
+<div class="floating-shape shape-2"></div>
+<div class="floating-shape shape-3"></div>
+<div class="floating-shape shape-4"></div>
+</div>
+</div>
+</section>
+<p>© 2025 Webloom.in. All rights reserved.</p>
+<script>
+document.querySelectorAll('.tilt-card').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = -(y - centerY) / 10;
+    const rotateY = (x - centerX) / 10;
+    card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+  });
+
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = `rotateX(0) rotateY(0) scale(1)`;
+  });
+});
+</script>
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.utils.toArray('.tilt-card').forEach((card, i) => {
+    gsap.from(card, {
+      scrollTrigger: {
+        trigger: card,
+        start: 'top 85%',
+        toggleActions: 'play none none reverse'
+      },
+      opacity: 0,
+      y: 100,
+      rotateX: 45,
+      duration: 1.2,
+      ease: 'power3.out',
+      delay: i * 0.1
+    });
+  });
+
+  gsap.utils.toArray('.scroll-effect').forEach((section, i) => {
+    gsap.from(section, {
+      scrollTrigger: {
+        trigger: section,
+        start: 'top 90%',
+        toggleActions: 'play none none reverse'
+      },
+      opacity: 0,
+      y: 80,
+      scale: 0.95,
+      duration: 1.2,
+      ease: 'power2.out',
+      delay: i * 0.2
+    });
+  });
+</script>
+</body>
+</html>
