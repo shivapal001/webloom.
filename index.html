@@ -1,1258 +1,1654 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Webloom.in - 3D Website Development</title>
-<meta content="Webloom.in offers modern website development services including Simple, Premium, and Full 3D websites" name="description"/>
-<link href="styles_1752929408211.css" rel="stylesheet"/>
-<!-- GSAP for advanced animations -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webloom.in — Premium Web Agency India</title>
+  <meta name="description" content="We build premium websites for businesses that want more customers, trust, and sales. Top web agency in Punjab, India. Serving salons, gyms, cafes, Shopify brands & startups.">
+  <meta name="keywords" content="website developer India, website agency Punjab, Shopify developer India, business website design, premium web agency">
+  <meta name="author" content="Webloom.in">
+  <!-- Open Graph -->
+  <meta property="og:title" content="Webloom.in — Premium Web Agency India">
+  <meta property="og:description" content="We build websites that make businesses look premium. Modern, fast, and conversion-focused.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://webloom.in">
+  <!-- Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "name": "Webloom.in",
+    "description": "Premium web design agency in Punjab, India",
+    "url": "https://webloomin.in",
+    "areaServed": "India",
+    "serviceType": "Web Design & Development"
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.module.js",
+      "jsm/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <style>
+    /* ── DESIGN TOKENS ─────────────────────────────────── */
+    :root {
+      --bg:          #080808;
+      --bg-alt:      #0c0c0c;
+      --bg-card:     #0f0f0f;
+      --text:        #f5f5f3;
+      --muted:       rgba(245,245,243,0.5);
+      --faint:       rgba(245,245,243,0.12);
+      --border:      rgba(245,245,243,0.1);
+      --accent:      #a78bfa;        /* violet */
+      --accent-glow: rgba(167,139,250,0.18);
+
+      --sans:  "DM Sans", system-ui, sans-serif;
+      --serif: "DM Serif Display", Georgia, serif;
+
+      --pad: clamp(1.25rem, 5vw, 4rem);
+      --r:   16px;
+      --r-lg: 24px;
+    }
+
+    /* ── RESET ─────────────────────────────────────────── */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    ul { list-style: none; }
+    img { display: block; max-width: 100%; }
+
+    /* ── CANVAS ────────────────────────────────────────── */
+    .webgl {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    /* ── GRAIN OVERLAY ─────────────────────────────────── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    /* ── NAV ───────────────────────────────────────────── */
+    .nav-wrap {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.25rem var(--pad);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.4s, border-color 0.4s;
+    }
+    .nav-wrap.scrolled {
+      background: rgba(8,8,8,0.82);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+    .logo-mark {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      background: var(--text);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-mark svg { width: 16px; height: 16px; color: var(--bg); }
+    .logo span { color: var(--muted); font-weight: 400; }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+    .nav-links a {
+      font-size: 0.875rem;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.55rem 1.1rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      background: var(--text);
+      color: var(--bg);
+      border-radius: 100px;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      background: none; border: none; padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 22px; height: 1.5px;
+      background: var(--text);
+      border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 99;
+      background: rgba(8,8,8,0.97);
+      backdrop-filter: blur(20px);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5rem;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      font-size: 1.75rem;
+      font-weight: 400;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+    .mobile-menu a:hover { color: var(--text); }
+
+    /* ── HERO ──────────────────────────────────────────── */
+    .hero-page {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      padding-inline: var(--pad);
+      padding-top: 6rem;
+    }
+    .hero-inner {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-bottom: 3rem;
+      gap: 2.5rem;
+    }
+    .hero-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 14px;
+      width: fit-content;
+    }
+    .hero-kicker .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity:1; transform:scale(1); }
+      50% { opacity:0.5; transform:scale(0.7); }
+    }
+    .hero-title {
+      font-size: clamp(2.5rem, 7vw, 5.5rem);
+      font-weight: 400;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      max-width: 14ch;
+    }
+    .hero-title em {
+      font-family: var(--serif);
+      font-style: italic;
+    }
+    .hero-title strong {
+      font-weight: 500;
+    }
+    .hero-bottom {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+    .hero-sub {
+      font-size: 0.9375rem;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 36ch;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.8rem 1.4rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      background: var(--text);
+      color: var(--bg);
+      border-radius: 100px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,255,255,0.12); }
+    .btn-primary svg { width: 14px; height: 14px; transition: transform 0.2s; }
+    .btn-primary:hover svg { transform: translateX(3px); }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.8rem 1.4rem;
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+
+    /* hero scroll hint */
+    .hero-scroll {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 2rem 0 3rem;
+      color: var(--muted);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .hero-scroll .line {
+      width: 1px;
+      height: 36px;
+      background: linear-gradient(to bottom, transparent, var(--border));
+    }
+
+    /* ── SECTIONS CONTAINER ────────────────────────────── */
+    .sections {
+      position: relative;
+      z-index: 2;
+      background: var(--bg);
+    }
+
+    /* shared section */
+    .sec {
+      padding: 6rem var(--pad);
+      border-top: 1px solid var(--border);
+    }
+    .sec--alt { background: var(--bg-alt); }
+
+    .sec-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.68rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+    .sec-label::before {
+      content: '';
+      width: 20px; height: 1px;
+      background: var(--border);
+    }
+    .sec-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.75rem;
+    }
+    .sec-title em { font-family: var(--serif); font-style: italic; }
+    .sec-sub {
+      font-size: 0.9375rem;
+      color: var(--muted);
+      max-width: 46ch;
+      line-height: 1.7;
+    }
+    .sec-head { margin-bottom: 3.5rem; }
+
+    /* ── TRUSTED BY ────────────────────────────────────── */
+    .trusted {
+      padding: 2rem var(--pad);
+      border-top: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .trusted-label {
+      text-align: center;
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(245,245,243,0.2);
+      margin-bottom: 1.5rem;
+    }
+    .marquee { overflow: hidden; mask: linear-gradient(to right, transparent, black 12%, black 88%, transparent); }
+    .marquee-inner {
+      display: flex;
+      gap: 4rem;
+      width: max-content;
+      animation: marquee-scroll 28s linear infinite;
+    }
+    .marquee-inner span {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: rgba(245,245,243,0.2);
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+    }
+    @keyframes marquee-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── SERVICES ──────────────────────────────────────── */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+    .service-card {
+      background: var(--bg);
+      padding: 2.25rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      transition: background 0.25s;
+      position: relative;
+    }
+    .sec--alt .service-card { background: var(--bg-alt); }
+    .service-card:hover { background: var(--bg-card); }
+    .service-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, var(--accent-glow), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+    .service-card:hover::after { opacity: 1; }
+    .svc-num {
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      font-variant-numeric: tabular-nums;
+    }
+    .svc-icon {
+      width: 40px; height: 40px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .service-card h3 {
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+    .service-card p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.65;
+      flex: 1;
+    }
+    .svc-tag {
+      font-size: 0.68rem;
+      color: rgba(245,245,243,0.25);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── PORTFOLIO ─────────────────────────────────────── */
+    .port-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 1.25rem;
+    }
+    .port-card {
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      background: var(--bg-card);
+      transition: border-color 0.25s, transform 0.3s;
+      cursor: pointer;
+    }
+    .port-card:hover { border-color: rgba(245,245,243,0.22); transform: translateY(-5px); }
+    .port-thumb {
+      aspect-ratio: 16/9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .port-thumb::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 50%, var(--bg-card));
+    }
+    .port-badge {
+      position: absolute;
+      top: 12px; right: 12px;
+      z-index: 1;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 3px 10px;
+      background: rgba(8,8,8,0.7);
+      backdrop-filter: blur(8px);
+    }
+    .port-info {
+      padding: 1.1rem 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .port-info h4 { font-size: 0.9rem; font-weight: 500; letter-spacing: -0.01em; }
+    .port-info p  { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .port-arrow {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      flex-shrink: 0;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .port-card:hover .port-arrow { border-color: var(--text); color: var(--text); }
+    .port-thumb img { transition: transform 0.5s ease; }
+    .port-card:hover .port-thumb img { transform: scale(1.05); }
+
+    /* portfolio before/after tag */
+    .port-before-after {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+    }
+    .ba-panel {
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .ba-panel:first-child { background: #0a0a0a; border-right: 1px solid var(--border); }
+    .ba-panel:last-child  { background: var(--bg-card); }
+    .ba-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .ba-mockup {
+      height: 120px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+    .ba-panel:first-child .ba-mockup { background: rgba(255,255,255,0.03); filter: grayscale(1) opacity(0.4); }
+    .ba-panel:last-child  .ba-mockup { background: linear-gradient(135deg, rgba(167,139,250,0.08), rgba(124,58,237,0.04)); }
+
+    /* ── PROCESS ───────────────────────────────────────── */
+    .process-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      background: var(--border);
+    }
+    .process-step {
+      background: var(--bg);
+      padding: 2.25rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+      transition: background 0.2s;
+    }
+    .process-step:hover { background: var(--bg-card); }
+    .step-n {
+      font-size: clamp(3.5rem, 6vw, 5rem);
+      font-weight: 400;
+      line-height: 0.9;
+      letter-spacing: -0.05em;
+      color: rgba(245,245,243,0.06);
+      font-family: var(--serif);
+    }
+    .step-line { width: 28px; height: 1px; background: var(--border); }
+    .process-step h4 { font-size: 0.9375rem; font-weight: 500; }
+    .process-step p  { font-size: 0.84rem; color: var(--muted); line-height: 1.65; }
+
+    /* ── TESTIMONIALS ──────────────────────────────────── */
+    .testi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(275px, 1fr));
+      gap: 1.25rem;
+    }
+    .testi-card {
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1.75rem;
+      background: var(--bg-card);
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+      transition: border-color 0.25s;
+    }
+    .testi-card:hover { border-color: rgba(245,245,243,0.2); }
+    .testi-stars { color: var(--muted); font-size: 0.75rem; letter-spacing: 4px; }
+    .testi-card blockquote {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.72;
+      font-style: italic;
+      flex: 1;
+    }
+    .testi-author { display: flex; align-items: center; gap: 10px; }
+    .testi-av {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(245,245,243,0.06);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 500;
+    }
+    .testi-name { font-size: 0.83rem; font-weight: 500; }
+    .testi-role { font-size: 0.72rem; color: rgba(245,245,243,0.3); margin-top: 1px; }
+
+    /* ── PRICING ───────────────────────────────────────── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+    .pricing-card {
+      background: var(--bg);
+      padding: 2.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+      position: relative;
+      transition: background 0.2s;
+    }
+    .pricing-card:hover { background: var(--bg-card); }
+    .pricing-card.featured {
+      background: var(--bg-card);
+    }
+    .pricing-card.featured::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, var(--accent-glow), transparent 70%);
+      pointer-events: none;
+    }
+    .plan-badge {
+      position: absolute;
+      top: 1.25rem; right: 1.25rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(167,139,250,0.3);
+      border-radius: 100px;
+      padding: 3px 10px;
+    }
+    .plan-tier {
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .plan-price {
+      font-size: clamp(2.25rem, 4.5vw, 3rem);
+      font-weight: 400;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      font-family: var(--serif);
+    }
+    .plan-price sup { font-size: 1rem; vertical-align: super; font-family: var(--sans); font-weight: 400; opacity: 0.6; }
+    .plan-desc { font-size: 0.84rem; color: var(--muted); line-height: 1.6; }
+    .plan-feats { display: flex; flex-direction: column; gap: 0.55rem; flex: 1; }
+    .plan-feat {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+    .feat-chk { color: rgba(245,245,243,0.4); font-size: 0.8rem; flex-shrink: 0; }
+    .plan-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0.75rem 1.25rem;
+      border-radius: 100px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-family: var(--sans);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .plan-btn:hover { background: rgba(245,245,243,0.05); border-color: rgba(245,245,243,0.25); }
+    .pricing-card.featured .plan-btn {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+    .pricing-card.featured .plan-btn:hover { opacity: 0.85; }
+
+    /* ── FAQ ───────────────────────────────────────────── */
+    .faq-list {
+      max-width: 680px;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+    }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-q {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.3rem 1.6rem;
+      background: none; border: none;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      font-weight: 400;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .faq-q:hover { background: rgba(245,245,243,0.02); }
+    .faq-ico {
+      flex-shrink: 0;
+      width: 22px; height: 22px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      color: var(--muted);
+      transition: transform 0.3s;
+    }
+    .faq-item.open .faq-ico { transform: rotate(45deg); }
+    .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+    .faq-item.open .faq-a { max-height: 200px; }
+    .faq-a p { padding: 0 1.6rem 1.3rem; font-size: 0.84rem; color: var(--muted); line-height: 1.72; }
+
+    /* ── FINAL CTA ─────────────────────────────────────── */
+    .final-cta {
+      text-align: center;
+      padding: 8rem var(--pad);
+      border-top: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .final-cta::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse, rgba(167,139,250,0.07), transparent 70%);
+      pointer-events: none;
+    }
+    .cta-bg-num {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(8rem, 20vw, 18rem);
+      font-weight: 400;
+      color: rgba(245,245,243,0.02);
+      font-family: var(--serif);
+      letter-spacing: -0.06em;
+      pointer-events: none;
+      user-select: none;
+    }
+    .final-cta h2 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      max-width: 560px;
+      margin: 0 auto 1rem;
+      position: relative;
+    }
+    .final-cta h2 em { font-family: var(--serif); font-style: italic; }
+    .final-cta p {
+      font-size: 0.9375rem;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+    .cta-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      position: relative;
+    }
+    .btn-wa {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.875rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--bg);
+      background: var(--text);
+      border-radius: 100px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-wa:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,255,255,0.14); }
+    .btn-wa svg { width: 15px; height: 15px; }
+
+    /* ── FOOTER ────────────────────────────────────────── */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem var(--pad);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .footer-copy {
+      font-size: 0.8rem;
+      color: rgba(245,245,243,0.25);
+    }
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .footer-links a {
+      font-size: 0.8rem;
+      color: rgba(245,245,243,0.35);
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text); }
+    .footer-socials {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .footer-socials a {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted);
+      font-size: 0.78rem;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .footer-socials a:hover { border-color: rgba(245,245,243,0.25); color: var(--text); }
+
+    /* ── STATS STRIP ───────────────────────────────────── */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      margin-top: 4rem;
+    }
+    .stat-item {
+      background: var(--bg);
+      padding: 2rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .stat-val {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 400;
+      letter-spacing: -0.04em;
+      font-family: var(--serif);
+    }
+    .stat-label { font-size: 0.8rem; color: var(--muted); }
+
+    /* ── SCROLL REVEAL ─────────────────────────────────── */
+    .reveal { opacity:0; transform:translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.in { opacity:1; transform:none; }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.3s; }
+    .reveal-d4 { transition-delay: 0.4s; }
+
+    /* ── RESPONSIVE ────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .nav-links, .nav-cta { display: none; }
+      .hamburger { display: flex; }
+
+      .hero-bottom { flex-direction: column; align-items: flex-start; }
+      .hero-actions { flex-wrap: wrap; }
+
+      .stats-strip { grid-template-columns: repeat(2, 1fr); }
+
+      .ba-panel { padding: 1.25rem; }
+
+      .site-footer { flex-direction: column; align-items: flex-start; gap: 1.25rem; }
+      .footer-links { flex-wrap: wrap; }
+    }
+    @media (max-width: 480px) {
+      .stats-strip { grid-template-columns: 1fr 1fr; }
+      .port-before-after { grid-template-columns: 1fr; }
+      .ba-panel:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+
+    /* ── WHATSAPP FLOAT ────────────────────────────────── */
+    .wa-float {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 200;
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: #25D366;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(37,211,102,0.35);
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .wa-float:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(37,211,102,0.5); }
+    .wa-float svg { width: 26px; height: 26px; color: #fff; }
+
+    /* ── ACCENT HIGHLIGHT GRADIENT ─────────────────────── */
+    .grad-text {
+      background: linear-gradient(135deg, var(--text) 40%, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  </style>
 </head>
 <body>
-<!-- Navigation -->
-<nav class="navbar">
-<div class="nav-container">
-<div class="logo">
-<div class="logo-3d">Webloom.in</div>
-</div>
-<ul class="nav-menu">
-<li><a href="#home">Home</a></li>
-<li><a href="about.html">About</a></li>
-<li><a href="#services">Services</a></li>
-<li><a href="#pricing">Plans</a></li>
-<li><a href="#careers">Careers</a></li>
-<li><a href="#reviews">Reviews</a></li>
-<li><a href="#contact">Contact</a></li>
-</ul>
-</div>
+
+<!-- WHATSAPP FLOAT -->
+<a class="wa-float" href="https://wa.me/919876543210?text=Hi%2C%20I%27m%20interested%20in%20a%20website%20for%20my%20business" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<!-- THREE.JS CANVAS -->
+<canvas class="webgl"></canvas>
+
+<!-- NAV -->
+<nav class="nav-wrap" id="nav">
+  <a href="#" class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L15 8 8 15 1 8z" opacity="0.8"/><path d="M8 4L12 8 8 12 4 8z"/></svg>
+    </div>
+    Webloom<span>.in</span>
+  </a>
+  <div class="nav-links">
+    <a href="#services">Services</a>
+    <a href="#portfolio">Portfolio</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#process">Process</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <a class="nav-cta" href="https://wa.me/919876543210?text=Hi%2C%20I%27m%20interested%20in%20a%20website" target="_blank" rel="noopener">
+    Book Free Call
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 9L9 1M9 1H3M9 1V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </a>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
-<!-- Landing Animation -->
-<section class="landing-animation">
-<div class="landing-content">
-<div class="logo-animation">
-<div class="spinning-globe"></div>
-<h1 class="landing-title">Webloom.in</h1>
-<p class="landing-subtitle">3D Website Development</p>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#services" onclick="closeMobile()">Services</a>
+  <a href="#portfolio" onclick="closeMobile()">Portfolio</a>
+  <a href="#pricing" onclick="closeMobile()">Pricing</a>
+  <a href="#process" onclick="closeMobile()">Process</a>
+  <a href="#contact" onclick="closeMobile()">Contact</a>
+  <a href="https://wa.me/919876543210" target="_blank" style="color:#25D366">WhatsApp ↗</a>
 </div>
-</div>
-</section>
-<!-- Home Section -->
-<section class="home-section" id="home">
-<div class="container">
-<div class="hero-content">
-<h1 class="hero-title">Modern 3D Website Development</h1>
-<p class="hero-subtitle">We create stunning websites with immersive 3D experiences</p>
-<div class="hero-buttons">
-<a class="btn btn-primary" href="#pricing">View Plans</a>
-<a class="btn btn-secondary" href="#contact">Get Started</a>
-</div>
-</div>
-<div class="hero-visual">
-<div class="floating-card card-1">
-<div class="card-content">
-<h3>Simple</h3>
-<p>WordPress &amp; Shopify</p>
-</div>
-</div>
-<div class="floating-card card-2">
-<div class="card-content">
-<h3>Premium</h3>
-<p>Coded with 3D</p>
-</div>
-</div>
-<div class="floating-card card-3">
-<div class="card-content">
-<h3>Full 3D</h3>
-<p>Complete Immersion</p>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- Services Section -->
-<section class="services-section" id="services">
-<div class="container">
-<h2 class="section-title">Our Services</h2>
-<div class="services-grid">
-<div class="service-card tilt-card neon-glow" data-anim-delay="" style="--delay: 1">
-<div class="service-icon">
-<div class="icon-3d icon-simple"></div>
-</div>
-<h3>Simple Websites</h3>
-<p>Professional WordPress and Shopify websites with modern design and functionality.</p>
-</div>
-<div class="service-card tilt-card neon-glow" data-anim-delay="" style="--delay: 2">
-<div class="service-icon">
-<div class="icon-3d icon-premium"></div>
-</div>
-<h3>Premium Websites</h3>
-<p>Custom coded websites with basic 3D elements and enhanced user experience.</p>
-</div>
-<div class="service-card tilt-card neon-glow" data-anim-delay="" style="--delay: 3">
-<div class="service-icon">
-<div class="icon-3d icon-full"></div>
-</div>
-<h3>Full 3D Websites</h3>
-<p>Complete immersive 3D websites with advanced animations and interactions.</p>
-</div>
-</div>
-</div>
-</section>
-<!-- Pricing Section -->
-<section class="pricing-section" id="pricing">
-<div class="container">
-<h2 class="section-title">Choose Your Plan</h2>
-<div class="pricing-grid">
-<div class="pricing-card tilt-card neon-glow" data-anim-delay="" style="--delay: 4">
-<div class="pricing-header">
-<h3>Simple Website</h3>
-<div class="price">₹2,000</div>
-</div>
-<div class="pricing-features">
-<ul>
-<li>WordPress or Shopify</li>
-<li>Mobile Responsive</li>
-<li>Basic SEO</li>
-<li>Contact Forms</li>
-<li>Social Media Integration</li>
-</ul>
-</div>
-<a class="btn btn-outline" href="#contact">Get Started</a>
-<div class="whatsapp-contact">
-<a href="https://wa.me/919815360481" target="_blank" class="whatsapp-link">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.893 3.297"/>
-</svg>
-WhatsApp: +91 9815360481
-</a>
-</div>
-</div>
-<div class="pricing-card featured tilt-card neon-glow" data-anim-delay="" style="--delay: 5">
-<div class="pricing-header">
-<h3>Premium Website</h3>
-<div class="price">₹5,000</div>
-</div>
-<div class="pricing-features">
-<ul>
-<li>Custom Coded</li>
-<li>Basic 3D Elements</li>
-<li>Advanced Animations</li>
-<li>Enhanced UX</li>
-<li>Performance Optimized</li>
-</ul>
-</div>
-<a class="btn btn-primary" href="#contact">Most Popular</a>
-<div class="whatsapp-contact">
-<a href="https://wa.me/919815360481" target="_blank" class="whatsapp-link">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.893 3.297"/>
-</svg>
-WhatsApp: +91 9815360481
-</a>
-</div>
-</div>
-<div class="pricing-card tilt-card neon-glow" data-anim-delay="" style="--delay: 6">
-<div class="pricing-header">
-<h3>Full 3D Website</h3>
-<div class="price">₹10,000</div>
-</div>
-<div class="pricing-features">
-<ul>
-<li>Complete 3D Design</li>
-<li>Immersive Experience</li>
-<li>Advanced Interactions</li>
-<li>Premium Support</li>
-<li>Custom Development</li>
-</ul>
-</div>
-<a class="btn btn-outline" href="#contact">Contact Us</a>
-<div class="whatsapp-contact">
-<a href="https://wa.me/919815360481" target="_blank" class="whatsapp-link">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.893 3.297"/>
-</svg>
-WhatsApp: +91 9815360481
-</a>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- Careers Section -->
-<section class="careers-section" id="careers">
-<div class="container">
-<h2 class="section-title">Join Our Team</h2>
-<div class="careers-content">
-<div class="careers-info">
-<h3>We're Looking for Talented Developers</h3>
-<p>Join our team and help create amazing 3D web experiences for clients worldwide.</p>
-</div>
-<form class="job-application-form">
-<div class="form-group">
-<label for="fullName">Full Name</label>
-<input id="fullName" name="fullName" required="" type="text"/>
-</div>
-<div class="form-group">
-<label for="email">Email</label>
-<input id="email" name="email" required="" type="email"/>
-</div>
-<div class="form-group">
-<label for="phone">Phone</label>
-<input id="phone" name="phone" required="" type="tel"/>
-</div>
-<div class="form-group">
-<label for="skillLevel">Skill Level</label>
-<select id="skillLevel" name="skillLevel" required="">
-<option value="">Choose your level</option>
-<option value="beginner">Beginner</option>
-<option value="intermediate">Intermediate</option>
-<option value="expert">Expert</option>
-</select>
-</div>
-<div class="form-group">
-<label for="bio">Bio</label>
-<textarea id="bio" name="bio" placeholder="Tell us about yourself..." rows="4"></textarea>
-</div>
-<div class="form-group">
-<label for="resume">Resume Upload</label>
-<input accept=".pdf,.doc,.docx" id="resume" name="resume" type="file"/>
-</div>
-<button class="btn btn-primary" type="submit">Submit Application</button>
-</form>
-</div>
-</div>
-</section>
-<!-- Reviews Section -->
-<section class="reviews-section scroll-effect" id="reviews">
-<div class="container">
-<h2 class="section-title">Client Reviews</h2>
-<p class="section-subtitle">See what our clients say about our work</p>
-<div class="reviews-container">
-<div class="reviews-display" id="reviewsDisplay">
-<!-- Reviews will be loaded here -->
-</div>
-<div class="review-form-wrapper">
-<h3>Share Your Experience</h3>
-<form class="review-form enhanced-form" id="reviewForm">
-<div class="form-group">
-<label for="reviewerName">Your Name</label>
-<input id="reviewerName" name="reviewerName" required="" type="text"/>
-<span class="form-error" id="reviewerNameError"></span>
-</div>
-<div class="form-group">
-<label for="reviewerCompany">Company (Optional)</label>
-<input id="reviewerCompany" name="reviewerCompany" type="text"/>
-</div>
-<div class="form-group">
-<label for="rating">Rating</label>
-<div class="rating-input" id="ratingInput">
-<span class="star" data-rating="1">★</span>
-<span class="star" data-rating="2">★</span>
-<span class="star" data-rating="3">★</span>
-<span class="star" data-rating="4">★</span>
-<span class="star" data-rating="5">★</span>
-</div>
-<input type="hidden" id="rating" name="rating" required="" value=""/>
-<span class="form-error" id="ratingError"></span>
-</div>
-<div class="form-group">
-<label for="reviewText">Your Review</label>
-<textarea id="reviewText" name="reviewText" required="" rows="4" placeholder="Tell us about your experience..."></textarea>
-<span class="form-error" id="reviewTextError"></span>
-</div>
-<button class="btn btn-primary submit-btn" type="submit">
-<span class="btn-text">Submit Review</span>
-<span class="btn-loader"></span>
-</button>
-</form>
-</div>
-</div>
-</div>
+
+<!-- ─────────────────────────────────────────────────────────
+     HERO
+────────────────────────────────────────────────────────── -->
+<section class="hero-page">
+  <div class="hero-inner">
+    <div class="hero-kicker reveal">
+      <span class="dot"></span>
+      Premium Web Agency · Punjab, India
+    </div>
+    <h1 class="hero-title reveal reveal-d1">
+      We Build Websites That Make Businesses <em>Look Premium.</em>
+    </h1>
+    <div class="hero-bottom">
+      <p class="hero-sub reveal reveal-d2">Modern websites for businesses that want more customers, more trust, and more sales — without the complexity.</p>
+      <div class="hero-actions reveal reveal-d3">
+        <a class="btn-primary" href="https://wa.me/919876543210?text=Hi%2C%20I%27m%20interested%20in%20a%20free%20call" target="_blank" rel="noopener">
+          Book Free Call
+          <svg viewBox="0 0 14 14" fill="none"><path d="M1 13L13 1M13 1H5M13 1V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </a>
+        <a class="btn-ghost" href="#portfolio">View Portfolio →</a>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="line"></div>
+    <span>Scroll</span>
+  </div>
 </section>
 
-
-<!-- Contact Section -->
-<section class="contact-section" id="contact">
-<div class="container">
-<h2 class="section-title">Get In Touch</h2>
-<div class="contact-content">
-<div class="contact-info">
-<h3>Ready to Start Your Project?</h3>
-<p>Let's discuss your vision and create something amazing together.</p>
-<div class="contact-details">
-<div class="contact-item">
-<strong>Email:</strong> Webloom.in00@gmail.com
-</div>
-<div class="contact-item">
-<strong>Primary Support:</strong> +91 9855187423
-<a href="https://wa.me/919855187423" target="_blank" class="contact-whatsapp">
-<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.893 3.297"/>
-</svg>
-</a>
-</div>
-<div class="contact-item">
-<strong>Technical Support:</strong> +91 7973630467
-<a href="https://wa.me/917973630467" target="_blank" class="contact-whatsapp">
-<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.893 3.297"/>
-</svg>
-</a>
-</div>
-<div class="contact-item">
-<strong>General Inquiries:</strong> +91 9815360481
-<a href="https://wa.me/919815360481" target="_blank" class="contact-whatsapp">
-<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.893 3.297"/>
-</svg>
-</a>
-</div>
-<div class="contact-item">
-<strong>Address:</strong> Mumbai, India
-</div>
-</div>
-</div>
-<div class="contact-form-container">
-<form class="contact-form enhanced-form" id="contactForm">
-<div class="form-group">
-<label for="contactName">Name</label>
-<input id="contactName" name="contactName" required="" type="text"/>
-<span class="form-error" id="contactNameError"></span>
-</div>
-<div class="form-group">
-<label for="contactEmail">Email</label>
-<input id="contactEmail" name="contactEmail" required="" type="email"/>
-<span class="form-error" id="contactEmailError"></span>
-</div>
-<div class="form-group">
-<label for="contactSubject">Subject</label>
-<input id="contactSubject" name="contactSubject" required="" type="text"/>
-<span class="form-error" id="contactSubjectError"></span>
-</div>
-<div class="form-group">
-<label for="contactMessage">Message</label>
-<textarea id="contactMessage" name="contactMessage" placeholder="Tell us about your project..." rows="5"></textarea>
-<span class="form-error" id="contactMessageError"></span>
-</div>
-<button class="btn btn-primary submit-btn" type="submit">
-<span class="btn-text">Send Message</span>
-<span class="btn-loader"></span>
-</button>
-</form>
-
-<!-- Admin Login Button -->
-<div class="admin-access">
-<button class="admin-btn" id="adminLoginBtn" title="Admin Access">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-<circle cx="12" cy="16" r="1"></circle>
-<path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-</svg>
-</button>
-</div>
-</div>
-</div>
-</div>
-</section>
-
-<!-- Admin Login Modal -->
-<div class="modal-overlay" id="adminModal">
-<div class="modal-content admin-modal">
-<div class="modal-header">
-<h3>Admin Access</h3>
-<button class="modal-close" id="modalClose">&times;</button>
-</div>
-<div class="modal-body">
-<form id="adminLoginForm" class="admin-form">
-<div class="form-group">
-<label for="adminPassword">Admin Password</label>
-<input type="password" id="adminPassword" name="adminPassword" required>
-<span class="form-error" id="adminPasswordError"></span>
-</div>
-<button type="submit" class="btn btn-primary admin-login-btn">
-<span class="btn-text">Login</span>
-<span class="btn-loader"></span>
-</button>
-</form>
-</div>
-</div>
-</div>
-
-<!-- Admin Dashboard Modal -->
-<div class="modal-overlay" id="adminDashboard">
-<div class="modal-content admin-dashboard">
-<div class="modal-header">
-<h3>Admin Dashboard</h3>
-<div class="admin-actions">
-<button class="btn btn-secondary" id="logoutBtn">Logout</button>
-<button class="modal-close" id="dashboardClose">&times;</button>
-</div>
-</div>
-<div class="modal-body">
-<div class="dashboard-tabs">
-<button class="tab-btn active" data-tab="submissions">Form Submissions</button>
-<button class="tab-btn" data-tab="reviews">Reviews</button>
-<button class="tab-btn" data-tab="analytics">Analytics</button>
-<button class="tab-btn" data-tab="settings">Settings</button>
-</div>
-<div class="tab-content">
-<div class="tab-pane active" id="submissions">
-<h4>Recent Submissions</h4>
-<div class="submissions-list" id="submissionsList">
-<!-- Dynamic content will be loaded here -->
-</div>
-</div>
-<div class="tab-pane" id="reviews">
-<h4>Client Reviews</h4>
-<div class="reviews-management">
-<div class="reviews-stats">
-<div class="analytics-card">
-<h5>Total Reviews</h5>
-<div class="analytics-value" id="totalReviews">Loading...</div>
-</div>
-<div class="analytics-card">
-<h5>Average Rating</h5>
-<div class="analytics-value" id="averageRating">Loading...</div>
-</div>
-</div>
-<div class="reviews-list" id="adminReviewsList">
-<!-- Reviews will be loaded here -->
-</div>
-</div>
-</div>
-<div class="tab-pane" id="analytics">
-<h4>Site Analytics</h4>
-<div class="analytics-grid">
-<div class="analytics-card">
-<h5>Total Visits</h5>
-<div class="analytics-value" id="totalVisits">Loading...</div>
-</div>
-<div class="analytics-card">
-<h5>Form Submissions</h5>
-<div class="analytics-value" id="totalSubmissions">Loading...</div>
-</div>
-<div class="analytics-card">
-<h5>Conversion Rate</h5>
-<div class="analytics-value" id="conversionRate">Loading...</div>
-</div>
-</div>
-</div>
-<div class="tab-pane" id="settings">
-<h4>Admin Settings</h4>
-<form id="adminSettingsForm">
-<div class="form-group">
-<label for="newPassword">Change Password</label>
-<input type="password" id="newPassword" name="newPassword">
-</div>
-<button type="submit" class="btn btn-primary">Update Settings</button>
-</form>
-</div>
-</div>
-</div>
-</div>
-</div>
-
-<!-- Success/Error Messages -->
-<div class="toast-container" id="toastContainer"></div>
-
-<!-- Loading Overlay -->
-<div class="loading-overlay" id="loadingOverlay">
-<div class="loading-spinner"></div>
-</div>
-
-<!-- Footer -->
-<footer class="footer">
-<div class="container">
-<div class="footer-content">
-<div class="footer-section">
-<h3>Webloom.in</h3>
-<p>Creating stunning 3D web experiences</p>
-</div>
-<div class="footer-section">
-<h4>Services</h4>
-<ul>
-<li><a href="#services">Simple Websites</a></li>
-<li><a href="#services">Premium Websites</a></li>
-<li><a href="#services">Full 3D Websites</a></li>
-</ul>
-</div>
-<div class="footer-section">
-<h4>Company</h4>
-<ul>
-<li><a href="about.html">About</a></li>
-<li><a href="#careers">Careers</a></li>
-<li><a href="#contact">Contact</a></li>
-</ul>
-</div>
-</div>
-<div class="footer-bottom">
-<p>© 2025 Webloom.in. All rights reserved.</p>
-</div>
-</div>
-</footer>
-<script>
-// Main Application Controller
-class WebBloomApp {
-    constructor() {
-        this.init();
-    }
-
-    init() {
-        this.setupNavigation();
-        this.setupAnimations();
-        this.setupForms();
-        this.setupAdminSystem();
-        this.setupReviews();
-        this.setupParticles();
-        this.setupScrollEffects();
-        this.setupInteractiveElements();
-        this.trackAnalytics();
-        this.loadSampleReviews();
-    }
-
-    // Navigation Setup
-    setupNavigation() {
-        const navbar = document.querySelector('.navbar');
-        const navToggle = document.getElementById('navToggle');
-        const navMenu = document.querySelector('.nav-menu');
-        const navLinks = document.querySelectorAll('.nav-link');
-
-        // Mobile menu toggle
-        if (navToggle) {
-            navToggle.addEventListener('click', () => {
-                navToggle.classList.toggle('active');
-                navMenu.classList.toggle('active');
-            });
-        }
-
-        // Close mobile menu when clicking on links
-        navLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                if (navToggle) navToggle.classList.remove('active');
-                if (navMenu) navMenu.classList.remove('active');
-            });
-        });
-
-        // Navbar scroll effect
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 100) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
-        });
-
-        // Smooth scrolling for navigation links
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                const href = link.getAttribute('href');
-                if (href.startsWith('#')) {
-                    e.preventDefault();
-                    const targetSection = document.querySelector(href);
-                    if (targetSection) {
-                        targetSection.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                }
-            });
-        });
-    }
-
-    // Admin System
-    setupAdminSystem() {
-        const adminBtn = document.getElementById('adminLoginBtn');
-        const adminModal = document.getElementById('adminModal');
-        const adminDashboard = document.getElementById('adminDashboard');
-        const adminForm = document.getElementById('adminLoginForm');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const modalClose = document.getElementById('modalClose');
-        const dashboardClose = document.getElementById('dashboardClose');
-
-        if (!adminBtn) return;
-
-        // Admin login button
-        adminBtn.addEventListener('click', () => {
-            if (this.isAdminLoggedIn()) {
-                this.showAdminDashboard();
-            } else {
-                this.showModal(adminModal);
-            }
-        });
-
-        // Admin login form
-        if (adminForm) {
-            adminForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.handleAdminLogin();
-            });
-        }
-
-        // Modal close buttons
-        if (modalClose) {
-            modalClose.addEventListener('click', () => {
-                this.hideModal(adminModal);
-            });
-        }
-
-        if (dashboardClose) {
-            dashboardClose.addEventListener('click', () => {
-                this.hideModal(adminDashboard);
-            });
-        }
-
-        // Logout
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                this.adminLogout();
-            });
-        }
-
-        // Dashboard tabs
-        this.setupDashboardTabs();
-
-        // Check if admin is already logged in
-        if (this.isAdminLoggedIn()) {
-            adminBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"></path><path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"></path><path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"></path></svg>';
-            adminBtn.title = 'Admin Dashboard';
-        }
-    }
-
-    handleAdminLogin() {
-        const passwordInput = document.getElementById('adminPassword');
-        const password = passwordInput.value;
-        const errorElement = document.getElementById('adminPasswordError');
-        
-        // Simple password check (in production, use proper authentication)
-        const adminPassword = 'admin123'; // This should be in environment variables
-        
-        if (password === adminPassword) {
-            // Set admin session
-            localStorage.setItem('adminSession', JSON.stringify({
-                loggedIn: true,
-                timestamp: Date.now()
-            }));
-            
-            this.hideModal(document.getElementById('adminModal'));
-            this.showAdminDashboard();
-            this.showToast('Admin login successful!', 'success');
-            
-            // Update admin button
-            const adminBtn = document.getElementById('adminLoginBtn');
-            adminBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"></path><path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"></path><path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"></path></svg>';
-            adminBtn.title = 'Admin Dashboard';
-            
-        } else {
-            errorElement.textContent = 'Invalid password';
-            errorElement.classList.add('show');
-            passwordInput.classList.add('error');
-            this.showToast('Invalid admin password', 'error');
-        }
-        
-        passwordInput.value = '';
-    }
-
-    isAdminLoggedIn() {
-        const session = JSON.parse(localStorage.getItem('adminSession') || '{}');
-        const oneHour = 60 * 60 * 1000;
-        
-        return session.loggedIn && (Date.now() - session.timestamp < oneHour);
-    }
-
-    showAdminDashboard() {
-        if (!this.isAdminLoggedIn()) {
-            this.showToast('Admin session expired. Please login again.', 'warning');
-            return;
-        }
-        
-        this.loadDashboardData();
-        this.showModal(document.getElementById('adminDashboard'));
-    }
-
-    adminLogout() {
-        localStorage.removeItem('adminSession');
-        this.hideModal(document.getElementById('adminDashboard'));
-        this.showToast('Logged out successfully', 'success');
-        
-        // Reset admin button
-        const adminBtn = document.getElementById('adminLoginBtn');
-        adminBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><circle cx="12" cy="16" r="1"></circle><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
-        adminBtn.title = 'Admin Access';
-    }
-
-    setupDashboardTabs() {
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        const tabPanes = document.querySelectorAll('.tab-pane');
-
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const targetTab = btn.getAttribute('data-tab');
-                
-                // Remove active class from all tabs
-                tabBtns.forEach(b => b.classList.remove('active'));
-                tabPanes.forEach(p => p.classList.remove('active'));
-                
-                // Add active class to clicked tab
-                btn.classList.add('active');
-                const targetPane = document.getElementById(targetTab);
-                if (targetPane) {
-                    targetPane.classList.add('active');
-                }
-                
-                // Load data based on tab
-                if (targetTab === 'submissions') {
-                    this.loadSubmissions();
-                } else if (targetTab === 'analytics') {
-                    this.loadAnalytics();
-                } else if (targetTab === 'reviews') {
-                    this.loadAdminReviews();
-                }
-            });
-        });
-    }
-
-    loadDashboardData() {
-        this.loadSubmissions();
-        this.loadAnalytics();
-        this.loadAdminReviews();
-    }
-
-    loadSubmissions() {
-        const submissionsList = document.getElementById('submissionsList');
-        if (!submissionsList) return;
-
-        const submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
-        
-        if (submissions.length === 0) {
-            submissionsList.innerHTML = '<p class="no-data">No form submissions yet.</p>';
-            return;
-        }
-
-        submissionsList.innerHTML = submissions.slice(0, 10).map(submission => `
-            <div class="submission-item">
-                <div class="submission-header">
-                    <h5>${submission.type === 'contactForm' ? 'Contact Form' : 'Job Application'}</h5>
-                    <span class="submission-date">${new Date(submission.timestamp).toLocaleDateString()}</span>
-                </div>
-                <div class="submission-data">
-                    ${Object.entries(submission.data).map(([key, value]) => 
-                        `<div><strong>${key}:</strong> ${value}</div>`
-                    ).join('')}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    loadAnalytics() {
-        const analytics = JSON.parse(localStorage.getItem('siteAnalytics') || '{}');
-        
-        const totalVisitsEl = document.getElementById('totalVisits');
-        const totalSubmissionsEl = document.getElementById('totalSubmissions');
-        const conversionRateEl = document.getElementById('conversionRate');
-
-        if (totalVisitsEl) {
-            totalVisitsEl.textContent = analytics.visits || '0';
-        }
-        if (totalSubmissionsEl) {
-            const submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
-            totalSubmissionsEl.textContent = submissions.length.toString();
-        }
-        if (conversionRateEl) {
-            const visits = analytics.visits || 0;
-            const submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]').length;
-            const rate = visits > 0 ? ((submissions / visits) * 100).toFixed(1) : '0';
-            conversionRateEl.textContent = rate + '%';
-        }
-    }
-
-    showModal(modal) {
-        if (modal) {
-            modal.classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-    }
-
-    hideModal(modal) {
-        if (modal) {
-            modal.classList.remove('show');
-            document.body.style.overflow = 'auto';
-        }
-    }
-
-    showToast(message, type = 'info') {
-        const toastContainer = document.getElementById('toastContainer');
-        if (!toastContainer) return;
-
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.innerHTML = `
-            <span class="toast-message">${message}</span>
-            <button class="toast-close">&times;</button>
-        `;
-
-        toastContainer.appendChild(toast);
-
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            toast.remove();
-        }, 5000);
-
-        // Manual close
-        toast.querySelector('.toast-close').addEventListener('click', () => {
-            toast.remove();
-        });
-    }
-
-    setupAnimations() {
-        // Register GSAP plugins
-        if (typeof gsap !== 'undefined') {
-            gsap.registerPlugin(ScrollTrigger);
-
-            // Tilt card effects
-            this.setupTiltCards();
-
-            // Service and pricing cards animation
-            gsap.utils.toArray('.tilt-card').forEach((card, i) => {
-                gsap.from(card, {
-                    scrollTrigger: {
-                        trigger: card,
-                        start: 'top 85%',
-                        toggleActions: 'play none none reverse'
-                    },
-                    opacity: 0,
-                    y: 100,
-                    rotateX: 45,
-                    duration: 1.2,
-                    ease: 'power3.out',
-                    delay: i * 0.1
-                });
-            });
-
-            // Section scroll animations
-            gsap.utils.toArray('.scroll-effect').forEach((section, i) => {
-                gsap.from(section, {
-                    scrollTrigger: {
-                        trigger: section,
-                        start: 'top 90%',
-                        toggleActions: 'play none none reverse'
-                    },
-                    opacity: 0,
-                    y: 80,
-                    scale: 0.95,
-                    duration: 1.2,
-                    ease: 'power2.out',
-                    delay: i * 0.2
-                });
-            });
-        }
-    }
-
-    setupTiltCards() {
-        document.querySelectorAll('.tilt-card').forEach(card => {
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                const rotateX = -(y - centerY) / 10;
-                const rotateY = (x - centerX) / 10;
-                card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
-            });
-
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = `rotateX(0) rotateY(0) scale(1)`;
-            });
-        });
-    }
-
-    setupForms() {
-        const forms = document.querySelectorAll('.enhanced-form');
-        forms.forEach(form => {
-            this.enhanceForm(form);
-        });
-    }
-
-    setupReviews() {
-        // Star rating interaction
-        const ratingInput = document.getElementById('ratingInput');
-        if (ratingInput) {
-            const stars = ratingInput.querySelectorAll('.star');
-            stars.forEach((star, index) => {
-                star.addEventListener('mouseover', () => {
-                    this.highlightStars(stars, index + 1);
-                });
-                
-                star.addEventListener('click', () => {
-                    const rating = index + 1;
-                    document.getElementById('rating').value = rating;
-                    this.setStarRating(stars, rating);
-                });
-            });
-
-            ratingInput.addEventListener('mouseleave', () => {
-                const currentRating = document.getElementById('rating').value;
-                this.setStarRating(stars, currentRating || 0);
-            });
-        }
-
-        // Load and display reviews
-        this.loadReviews();
-    }
-
-    highlightStars(stars, rating) {
-        stars.forEach((star, index) => {
-            if (index < rating) {
-                star.classList.add('highlighted');
-            } else {
-                star.classList.remove('highlighted');
-            }
-        });
-    }
-
-    setStarRating(stars, rating) {
-        stars.forEach((star, index) => {
-            star.classList.remove('highlighted', 'selected');
-            if (index < rating) {
-                star.classList.add('selected');
-            }
-        });
-    }
-
-    loadReviews() {
-        const reviewsDisplay = document.getElementById('reviewsDisplay');
-        if (!reviewsDisplay) return;
-
-        const reviews = JSON.parse(localStorage.getItem('clientReviews') || '[]');
-        
-        if (reviews.length === 0) {
-            reviewsDisplay.innerHTML = '<div class="no-reviews"><p>No reviews yet. Be the first to share your experience!</p></div>';
-            return;
-        }
-
-        reviewsDisplay.innerHTML = reviews.map(review => `
-            <div class="review-item">
-                <div class="review-header">
-                    <div class="reviewer-info">
-                        <h4>${review.name}</h4>
-                        ${review.company ? `<span class="company">${review.company}</span>` : ''}
-                    </div>
-                    <div class="review-rating">
-                        ${this.generateStars(review.rating)}
-                    </div>
-                </div>
-                <p class="review-text">${review.text}</p>
-                <div class="review-date">${new Date(review.timestamp).toLocaleDateString()}</div>
-            </div>
-        `).join('');
-    }
-
-    loadAdminReviews() {
-        const adminReviewsList = document.getElementById('adminReviewsList');
-        const totalReviewsEl = document.getElementById('totalReviews');
-        const averageRatingEl = document.getElementById('averageRating');
-        
-        if (!adminReviewsList) return;
-
-        const reviews = JSON.parse(localStorage.getItem('clientReviews') || '[]');
-        
-        // Update stats
-        if (totalReviewsEl) {
-            totalReviewsEl.textContent = reviews.length.toString();
-        }
-        
-        if (averageRatingEl && reviews.length > 0) {
-            const avgRating = (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1);
-            averageRatingEl.textContent = avgRating + ' ★';
-        } else if (averageRatingEl) {
-            averageRatingEl.textContent = '0 ★';
-        }
-
-        if (reviews.length === 0) {
-            adminReviewsList.innerHTML = '<p class="no-data">No reviews submitted yet.</p>';
-            return;
-        }
-
-        adminReviewsList.innerHTML = reviews.map(review => `
-            <div class="review-admin-item">
-                <div class="review-admin-header">
-                    <div class="reviewer-details">
-                        <h5>${review.name}</h5>
-                        ${review.company ? `<span class="company-name">${review.company}</span>` : ''}
-                    </div>
-                    <div class="review-admin-rating">
-                        ${this.generateStars(review.rating)} (${review.rating}/5)
-                    </div>
-                </div>
-                <p class="review-admin-text">${review.text}</p>
-                <div class="review-admin-meta">
-                    <span class="review-admin-date">${new Date(review.timestamp).toLocaleDateString()}</span>
-                    <button class="btn-delete-review" onclick="app.deleteReview('${review.id}')">Delete</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    generateStars(rating) {
-        let stars = '';
-        for (let i = 1; i <= 5; i++) {
-            stars += `<span class="star ${i <= rating ? 'filled' : ''}">${i <= rating ? '★' : '☆'}</span>`;
-        }
-        return stars;
-    }
-
-    deleteReview(reviewId) {
-        if (!this.isAdminLoggedIn()) return;
-        
-        if (confirm('Are you sure you want to delete this review?')) {
-            let reviews = JSON.parse(localStorage.getItem('clientReviews') || '[]');
-            reviews = reviews.filter(review => review.id !== reviewId);
-            localStorage.setItem('clientReviews', JSON.stringify(reviews));
-            
-            this.loadAdminReviews();
-            this.loadReviews(); // Refresh public display
-            this.showToast('Review deleted successfully', 'success');
-        }
-    }
-
-    loadSampleReviews() {
-        const existingReviews = JSON.parse(localStorage.getItem('clientReviews') || '[]');
-        
-        if (existingReviews.length === 0) {
-            const sampleReviews = [
-                {
-                    id: 'sample_1',
-                    name: 'Sarah Johnson',
-                    company: 'Tech Innovations Inc.',
-                    rating: 5,
-                    text: 'Amazing work on our company website! The 3D elements really make us stand out from competitors.',
-                    timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-                },
-                {
-                    id: 'sample_2',
-                    name: 'Michael Chen',
-                    company: 'StartupXYZ',
-                    rating: 5,
-                    text: 'Professional, creative, and delivered exactly what we envisioned. Highly recommend!',
-                    timestamp: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
-                },
-                {
-                    id: 'sample_3',
-                    name: 'Emily Rodriguez',
-                    company: '',
-                    rating: 4,
-                    text: 'Great attention to detail and excellent communication throughout the project.',
-                    timestamp: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString()
-                }
-            ];
-            
-            localStorage.setItem('clientReviews', JSON.stringify(sampleReviews));
-        }
-    }
-
-    enhanceForm(form) {
-        const inputs = form.querySelectorAll('input, select, textarea');
-        const submitBtn = form.querySelector('.submit-btn');
-
-        // Real-time validation
-        inputs.forEach(input => {
-            input.addEventListener('blur', () => this.validateField(input));
-            input.addEventListener('input', () => this.clearFieldError(input));
-        });
-
-        // Form submission
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const isValid = this.validateForm(form);
-            if (!isValid) return;
-
-            await this.submitForm(form);
-        });
-    }
-
-    validateField(field) {
-        const value = field.value.trim();
-        const fieldName = field.name;
-        const errorElement = document.getElementById(`${fieldName}Error`);
-        let isValid = true;
-        let message = '';
-
-        // Required field validation
-        if (field.hasAttribute('required') && !value) {
-            isValid = false;
-            message = 'This field is required';
-        }
-
-        // Email validation
-        if (field.type === 'email' && value) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(value)) {
-                isValid = false;
-                message = 'Please enter a valid email address';
-            }
-        }
-
-        // Update field appearance and error message
-        if (isValid) {
-            field.classList.remove('error');
-            field.classList.add('success');
-            if (errorElement) {
-                errorElement.textContent = '';
-                errorElement.classList.remove('show');
-            }
-        } else {
-            field.classList.remove('success');
-            field.classList.add('error');
-            if (errorElement) {
-                errorElement.textContent = message;
-                errorElement.classList.add('show');
-            }
-        }
-
-        return isValid;
-    }
-
-    clearFieldError(field) {
-        field.classList.remove('error');
-        const errorElement = document.getElementById(`${field.name}Error`);
-        if (errorElement) {
-            errorElement.classList.remove('show');
-        }
-    }
-
-    validateForm(form) {
-        const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
-        let isValid = true;
-
-        inputs.forEach(input => {
-            if (!this.validateField(input)) {
-                isValid = false;
-            }
-        });
-
-        return isValid;
-    }
-
-    async submitForm(form) {
-        const submitBtn = form.querySelector('.submit-btn');
-        const formData = new FormData(form);
-        const formType = form.id;
-
-        // Show loading state
-        submitBtn.classList.add('loading');
-
-        try {
-            // Simulate form submission
-            await this.delay(2000);
-            
-            if (formType === 'reviewForm') {
-                // Handle review submission
-                this.storeReviewSubmission(formData);
-                this.showToast('Thank you for your review!', 'success');
-            } else {
-                // Handle other form submissions
-                this.storeFormSubmission(formType, formData);
-                this.showToast('Form submitted successfully!', 'success');
-            }
-            
-            // Reset form
-            form.reset();
-            form.querySelectorAll('.success').forEach(field => {
-                field.classList.remove('success');
-            });
-
-            // Reset star rating if it's a review form
-            if (formType === 'reviewForm') {
-                const stars = form.querySelectorAll('.star');
-                this.setStarRating(stars, 0);
-                document.getElementById('rating').value = '';
-            }
-
-        } catch (error) {
-            this.showToast('Failed to submit form. Please try again.', 'error');
-        } finally {
-            submitBtn.classList.remove('loading');
-        }
-    }
-
-    storeReviewSubmission(formData) {
-        const reviews = JSON.parse(localStorage.getItem('clientReviews') || '[]');
-        const review = {
-            id: 'review_' + Date.now(),
-            name: formData.get('reviewerName'),
-            company: formData.get('reviewerCompany') || '',
-            rating: parseInt(formData.get('rating')),
-            text: formData.get('reviewText'),
-            timestamp: new Date().toISOString()
-        };
-        
-        reviews.unshift(review);
-        localStorage.setItem('clientReviews', JSON.stringify(reviews.slice(0, 50))); // Keep only last 50 reviews
-        
-        // Refresh reviews display
-        this.loadReviews();
-        
-        // Update analytics
-        this.updateAnalytics('review');
-    }
-
-    storeFormSubmission(formType, formData) {
-        const submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
-        const submission = {
-            id: Date.now(),
-            type: formType,
-            timestamp: new Date().toISOString(),
-            data: Object.fromEntries(formData.entries())
-        };
-        
-        submissions.unshift(submission);
-        localStorage.setItem('formSubmissions', JSON.stringify(submissions.slice(0, 100))); // Keep only last 100
-        
-        // Update analytics
-        this.updateAnalytics('submission');
-    }
-
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    setupParticles() {
-        // Simple particle effect - can be enhanced
-    }
-
-    setupScrollEffects() {
-        // Additional scroll effects
-    }
-
-    setupInteractiveElements() {
-        // Additional interactive elements
-    }
-
-    trackAnalytics() {
-        // Track page visit
-        this.updateAnalytics('visit');
-    }
-
-    updateAnalytics(type) {
-        const analytics = JSON.parse(localStorage.getItem('siteAnalytics') || '{}');
-        
-        if (type === 'visit') {
-            analytics.visits = (analytics.visits || 0) + 1;
-        }
-        
-        localStorage.setItem('siteAnalytics', JSON.stringify(analytics));
-    }
+<!-- ─────────────────────────────────────────────────────────
+     SECTIONS
+────────────────────────────────────────────────────────── -->
+<div class="sections">
+
+  <!-- TRUSTED BY -->
+  <div class="trusted">
+    <p class="trusted-label">Trusted by businesses across India</p>
+    <div class="marquee">
+      <div class="marquee-inner">
+        <span>Star Salon</span>
+        <span>·</span>
+        <span>FitZone Gym</span>
+        <span>·</span>
+        <span>The Brew House</span>
+        <span>·</span>
+        <span>PawParadise</span>
+        <span>·</span>
+        <span>Zara Clothing Co.</span>
+        <span>·</span>
+        <span>Spice Garden Restaurant</span>
+        <span>·</span>
+        <span>UrbanCuts Barbershop</span>
+        <span>·</span>
+        <span>GlowSkin Studio</span>
+        <span>·</span>
+        <span>Ludhiana Motors</span>
+        <span>·</span>
+        <span>CloudFit Apparel</span>
+        <span>·</span>
+        <!-- duplicate for seamless loop -->
+        <span>Star Salon</span>
+        <span>·</span>
+        <span>FitZone Gym</span>
+        <span>·</span>
+        <span>The Brew House</span>
+        <span>·</span>
+        <span>PawParadise</span>
+        <span>·</span>
+        <span>Zara Clothing Co.</span>
+        <span>·</span>
+        <span>Spice Garden Restaurant</span>
+        <span>·</span>
+        <span>UrbanCuts Barbershop</span>
+        <span>·</span>
+        <span>GlowSkin Studio</span>
+        <span>·</span>
+        <span>Ludhiana Motors</span>
+        <span>·</span>
+        <span>CloudFit Apparel</span>
+        <span>·</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <section class="sec sec--alt" id="services">
+    <div class="sec-head reveal">
+      <span class="sec-label">What we do</span>
+      <h2 class="sec-title">Services Built for <em>Real Results</em></h2>
+      <p class="sec-sub">From local shops to Shopify empires — we design websites that convert visitors into customers.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal">
+        <span class="svc-num">01</span>
+        <div class="svc-icon">🎨</div>
+        <h3>Website Design</h3>
+        <p>Modern UI/UX websites tailored to your brand — built to look premium and perform on every device.</p>
+        <span class="svc-tag">UI · UX · Responsive</span>
+      </div>
+      <div class="service-card reveal reveal-d1">
+        <span class="svc-num">02</span>
+        <div class="svc-icon">🛒</div>
+        <h3>Shopify Stores</h3>
+        <p>High-converting ecommerce stores for brands that want more sales, beautiful product pages, and a seamless checkout.</p>
+        <span class="svc-tag">Ecommerce · Shopify · Conversion</span>
+      </div>
+      <div class="service-card reveal reveal-d2">
+        <span class="svc-num">03</span>
+        <div class="svc-icon">🚀</div>
+        <h3>Landing Pages</h3>
+        <p>Laser-focused landing pages engineered for one goal: getting you more leads, calls, and signups.</p>
+        <span class="svc-tag">CRO · Lead Gen · Ads</span>
+      </div>
+      <div class="service-card reveal reveal-d3">
+        <span class="svc-num">04</span>
+        <div class="svc-icon">✨</div>
+        <h3>Website Redesign</h3>
+        <p>Transform your outdated website into a sleek, modern experience that instantly builds trust with visitors.</p>
+        <span class="svc-tag">Redesign · Modernize · SEO</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-strip reveal">
+      <div class="stat-item">
+        <span class="stat-val">50+</span>
+        <span class="stat-label">Websites launched</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val">3×</span>
+        <span class="stat-label">Avg. lead increase</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val">7d</span>
+        <span class="stat-label">Avg. delivery time</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val">100%</span>
+        <span class="stat-label">Mobile responsive</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PORTFOLIO -->
+  <section class="sec" id="portfolio">
+    <div class="sec-head reveal">
+      <span class="sec-label">Our work</span>
+      <h2 class="sec-title">Built for <em>Businesses Like Yours</em></h2>
+      <p class="sec-sub">Real projects, real results. Here's a glimpse of what we've built for our clients across India.</p>
+    </div>
+    <div class="port-grid">
+      <!-- Before / After showcase -->
+      <div class="port-before-after reveal">
+        <div class="ba-panel">
+          <span class="ba-label">Before — Old Website</span>
+          <div class="ba-mockup">💤</div>
+          <h4 style="font-size:0.85rem;font-weight:500;">Outdated. Slow. Not mobile-friendly.</h4>
+          <p style="font-size:0.78rem;color:var(--muted);">Generic templates, no clear call to action, and low trust.</p>
+        </div>
+        <div class="ba-panel">
+          <span class="ba-label">After — Webloom Design</span>
+          <div class="ba-mockup">✨</div>
+          <h4 style="font-size:0.85rem;font-weight:500;">Premium. Fast. Conversion-ready.</h4>
+          <p style="font-size:0.78rem;color:var(--muted);">Custom design, WhatsApp CTA, and SEO baked in.</p>
+        </div>
+      </div>
+
+      <a href="https://www.posthire.online" target="_blank" class="port-card reveal reveal-d1" style="text-decoration:none;display:block;">
+        <div class="port-thumb" style="background:linear-gradient(135deg,#0d1117,#161b22);overflow:hidden;padding:0;">
+          <img src="https://api.microlink.io/?url=https%3A%2F%2Fwww.posthire.online&screenshot=true&meta=false&embed=screenshot.url" alt="PostHire" style="width:100%;height:100%;object-fit:cover;object-position:top;transition:transform 0.4s;" onerror="this.style.display='none';this.parentElement.innerHTML+='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;\'>🚀</div>'" />
+          <span class="port-badge">Startup</span>
+        </div>
+        <div class="port-info">
+          <div>
+            <h4>PostHire</h4>
+            <p>Creators × Brands collaboration platform · India</p>
+          </div>
+          <div class="port-arrow">↗</div>
+        </div>
+      </a>
+
+      <a href="https://www.foundrmatch.in" target="_blank" class="port-card reveal reveal-d2" style="text-decoration:none;display:block;">
+        <div class="port-thumb" style="background:#000;overflow:hidden;padding:0;">
+          <img src="https://api.microlink.io/?url=https%3A%2F%2Fwww.foundrmatch.in&screenshot=true&meta=false&embed=screenshot.url" alt="FoundrMatch" style="width:100%;height:100%;object-fit:cover;object-position:top;transition:transform 0.4s;" onerror="this.style.display='none';this.parentElement.innerHTML+='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;\'>🤝</div>'" />
+          <span class="port-badge">Co-founder</span>
+        </div>
+        <div class="port-info">
+          <div>
+            <h4>FoundrMatch</h4>
+            <p>Co-founder matching platform · India</p>
+          </div>
+          <div class="port-arrow">↗</div>
+        </div>
+      </a>
+
+      <a href="https://www.finverze.com" target="_blank" class="port-card reveal" style="text-decoration:none;display:block;">
+        <div class="port-thumb" style="background:#0a0014;overflow:hidden;padding:0;">
+          <img src="https://api.microlink.io/?url=https%3A%2F%2Fwww.finverze.com&screenshot=true&meta=false&embed=screenshot.url" alt="Finverze" style="width:100%;height:100%;object-fit:cover;object-position:top;transition:transform 0.4s;" onerror="this.style.display='none';this.parentElement.innerHTML+='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;\'>💰</div>'" />
+          <span class="port-badge">Fintech</span>
+        </div>
+        <div class="port-info">
+          <div>
+            <h4>Finverze</h4>
+            <p>Money skills for PUC students · Bengaluru</p>
+          </div>
+          <div class="port-arrow">↗</div>
+        </div>
+      </a>
+
+      <a href="https://demo5-chi-ten.vercel.app/" target="_blank" class="port-card reveal reveal-d1" style="text-decoration:none;display:block;">
+        <div class="port-thumb" style="background:#0d0500;overflow:hidden;padding:0;">
+          <img src="https://api.microlink.io/?url=https%3A%2F%2Fdemo5-chi-ten.vercel.app%2F&screenshot=true&meta=false&embed=screenshot.url" alt="Abdu Hadi Portfolio" style="width:100%;height:100%;object-fit:cover;object-position:top;transition:transform 0.4s;" onerror="this.style.display='none';this.parentElement.innerHTML+='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;\'>🎨</div>'" />
+          <span class="port-badge">Portfolio</span>
+        </div>
+        <div class="port-info">
+          <div>
+            <h4>Abdu Hadi</h4>
+            <p>Web designer portfolio · Freelance</p>
+          </div>
+          <div class="port-arrow">↗</div>
+        </div>
+      </a>
+    </div>
+
+    <div style="margin-top:2.5rem;text-align:center;" class="reveal">
+      <a class="btn-ghost" href="https://wa.me/919876543210?text=Hi%2C%20can%20I%20see%20more%20portfolio%20examples%3F" target="_blank">
+        See More Projects →
+      </a>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="sec sec--alt" id="process">
+    <div class="sec-head reveal">
+      <span class="sec-label">How it works</span>
+      <h2 class="sec-title">From Idea to <em>Launch in Days</em></h2>
+      <p class="sec-sub">Our streamlined process means you get a premium website fast — without the back-and-forth chaos.</p>
+    </div>
+    <div class="process-steps">
+      <div class="process-step reveal">
+        <div class="step-n">01</div>
+        <div class="step-line"></div>
+        <h4>Discovery Call</h4>
+        <p>We learn about your business, goals, and target audience. Free, no commitment, 30 minutes max.</p>
+      </div>
+      <div class="process-step reveal reveal-d1">
+        <div class="step-n">02</div>
+        <div class="step-line"></div>
+        <h4>Design</h4>
+        <p>We create a premium custom design tailored to your brand. You approve it before we build anything.</p>
+      </div>
+      <div class="process-step reveal reveal-d2">
+        <div class="step-n">03</div>
+        <div class="step-line"></div>
+        <h4>Development</h4>
+        <p>We build your website — fast, mobile-optimized, SEO-ready, and integrated with WhatsApp.</p>
+      </div>
+      <div class="process-step reveal reveal-d3">
+        <div class="step-n">04</div>
+        <div class="step-line"></div>
+        <h4>Launch</h4>
+        <p>Your website goes live. We handle hosting, domain setup, and give you a 30-day support window.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="sec" id="testimonials">
+    <div class="sec-head reveal">
+      <span class="sec-label">Client love</span>
+      <h2 class="sec-title">What Our <em>Clients Say</em></h2>
+      <p class="sec-sub">Real feedback from real businesses who chose Webloom to grow their online presence.</p>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <blockquote>"Our business finally looks professional online. We went from zero calls to getting 15+ WhatsApp inquiries a week just from our new website."</blockquote>
+        <div class="testi-author">
+          <div class="testi-av">RS</div>
+          <div>
+            <div class="testi-name">Ranjit Singh</div>
+            <div class="testi-role">Owner, Star Salon · Ludhiana</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-d1">
+        <div class="testi-stars">★★★★★</div>
+        <blockquote>"The team delivered in just 5 days. The design is exactly what I wanted — clean, modern, and our gym memberships have doubled since launch."</blockquote>
+        <div class="testi-author">
+          <div class="testi-av">PK</div>
+          <div>
+            <div class="testi-name">Priya Kaur</div>
+            <div class="testi-role">Founder, FitZone Gym · Chandigarh</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-d2">
+        <div class="testi-stars">★★★★★</div>
+        <blockquote>"I didn't think a small cafe like mine needed a premium website. But since Webloom built ours, we're booked every weekend. Worth every rupee."</blockquote>
+        <div class="testi-author">
+          <div class="testi-av">AM</div>
+          <div>
+            <div class="testi-name">Arjun Mehta</div>
+            <div class="testi-role">Owner, The Brew House · Amritsar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="sec sec--alt" id="pricing">
+    <div class="sec-head reveal">
+      <span class="sec-label">Transparent pricing</span>
+      <h2 class="sec-title">Simple Plans, <em>No Surprises</em></h2>
+      <p class="sec-sub">All plans include mobile-responsive design, WhatsApp integration, and SEO basics. No hidden costs.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card reveal">
+        <div class="plan-tier">Starter</div>
+        <div class="plan-price"><sup>₹</sup>4,999</div>
+        <p class="plan-desc">Perfect for local businesses that need a clean, professional online presence fast.</p>
+        <ul class="plan-feats">
+          <li class="plan-feat"><span class="feat-chk">✓</span> 1-page website</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> Mobile responsive</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> WhatsApp CTA button</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> Basic SEO setup</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> 7-day delivery</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> 14 days support</li>
+        </ul>
+        <a class="plan-btn" href="https://wa.me/919876543210?text=Hi%2C%20I%27m%20interested%20in%20the%20Starter%20plan" target="_blank">Get Started →</a>
+      </div>
+      <div class="pricing-card featured reveal reveal-d1">
+        <span class="plan-badge">Most Popular</span>
+        <div class="plan-tier">Business</div>
+        <div class="plan-price"><sup>₹</sup>14,999</div>
+        <p class="plan-desc">Multi-page website for businesses serious about their digital presence and growth.</p>
+        <ul class="plan-feats">
+          <li class="plan-feat"><span class="feat-chk">✓</span> 5–8 page website</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> Premium UI/UX design</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> WhatsApp + contact form</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> Full SEO optimization</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> Google Maps integration</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> 30 days support</li>
+        </ul>
+        <a class="plan-btn" href="https://wa.me/919876543210?text=Hi%2C%20I%27m%20interested%20in%20the%20Business%20plan" target="_blank">Get Started →</a>
+      </div>
+      <div class="pricing-card reveal reveal-d2">
+        <div class="plan-tier">Premium</div>
+        <div class="plan-price"><sup>₹</sup>39,999<span style="font-size:1rem;opacity:0.4;font-family:var(--sans);font-weight:400;">+</span></div>
+        <p class="plan-desc">Custom solution for brands that want a market-leading digital presence with advanced features.</p>
+        <ul class="plan-feats">
+          <li class="plan-feat"><span class="feat-chk">✓</span> Custom design system</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> Shopify / ecommerce</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> Animations & interactions</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> CMS integration</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> Advanced SEO & schema</li>
+          <li class="plan-feat"><span class="feat-chk">✓</span> 60 days support</li>
+        </ul>
+        <a class="plan-btn" href="https://wa.me/919876543210?text=Hi%2C%20I%27m%20interested%20in%20the%20Premium%20plan" target="_blank">Discuss Project →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="sec" id="faq">
+    <div class="sec-head reveal">
+      <span class="sec-label">Questions</span>
+      <h2 class="sec-title">Frequently <em>Asked</em></h2>
+    </div>
+    <div class="faq-list reveal">
+      <div class="faq-item">
+        <button class="faq-q">How long does it take to build my website? <span class="faq-ico">+</span></button>
+        <div class="faq-a"><p>Most websites are delivered within 5–10 business days. The Starter plan typically takes 5–7 days, Business plan 7–10 days, and Premium projects are scoped individually. We'll give you a clear timeline before we start.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Do you provide hosting? <span class="faq-ico">+</span></button>
+        <div class="faq-a"><p>Yes, we can set up and manage your hosting on fast, reliable servers. We use platforms like Vercel, Netlify, or shared hosting depending on your needs. Hosting is charged separately at very affordable rates.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can you redesign my existing website? <span class="faq-ico">+</span></button>
+        <div class="faq-a"><p>Absolutely. Website redesign is one of our specialties. We'll review your current site, keep what works (like your domain and content), and transform it into a modern, premium design that actually converts.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Is mobile responsive design included? <span class="faq-ico">+</span></button>
+        <div class="faq-a"><p>Always. Every website we build is fully responsive and tested across all screen sizes — phones, tablets, and desktops. Over 70% of your visitors are on mobile, so this is non-negotiable for us.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Do you work with businesses outside Punjab? <span class="faq-ico">+</span></button>
+        <div class="faq-a"><p>Yes! We work with clients across India and internationally. The entire process — discovery, design review, revisions, and delivery — happens online. Timezone is never a barrier.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">What if I need changes after launch? <span class="faq-ico">+</span></button>
+        <div class="faq-a"><p>All plans include post-launch support (14–60 days depending on plan). After that, we offer affordable monthly maintenance packages. Minor text/image changes are always quick and easy to handle.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final-cta" id="contact">
+    <div class="cta-bg-num">W</div>
+    <h2 class="reveal">Ready to Grow Your Business <em>Online?</em></h2>
+    <p class="reveal reveal-d1">Book a free 30-minute call — no commitment, no pressure. Just honest advice about your website.</p>
+    <div class="cta-wrap reveal reveal-d2">
+      <a class="btn-wa" href="https://wa.me/919876543210?text=Hi%2C%20I%27m%20interested%20in%20a%20website%20for%20my%20business.%20Let%27s%20talk!" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Chat on WhatsApp
+      </a>
+      <a class="btn-ghost" href="mailto:hello@webloom.in">Send an Email</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <a href="#" class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L15 8 8 15 1 8z" opacity="0.8"/><path d="M8 4L12 8 8 12 4 8z"/></svg>
+      </div>
+      Webloom<span>.in</span>
+    </a>
+    <span class="footer-copy">© 2025 Webloom. Made with ♥ in Punjab, India.</span>
+    <div class="footer-links">
+      <a href="#services">Services</a>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#contact">Contact</a>
+      <a href="mailto:hello@webloom.in">hello@webloom.in</a>
+    </div>
+    <div class="footer-socials">
+      <a href="https://instagram.com/webloom.in" target="_blank" aria-label="Instagram">ig</a>
+      <a href="https://wa.me/919876543210" target="_blank" aria-label="WhatsApp">wa</a>
+    </div>
+  </footer>
+
+</div><!-- .sections -->
+
+<!-- THREE.JS — Interactive liquid glass hero visual -->
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "jsm/controls/OrbitControls.js";
+import { FontLoader } from "jsm/loaders/FontLoader.js";
+import { TextGeometry } from "jsm/geometries/TextGeometry.js";
+import { RoundedBoxGeometry } from "jsm/geometries/RoundedBoxGeometry.js";
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 5;
+
+const canvas = document.querySelector(".webgl");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0x000000, 0);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.enableZoom = false;
+controls.enablePan = false;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.4;
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2(9999, 9999);
+const targetMouse = new THREE.Vector3();
+const currentMouse = new THREE.Vector3();
+
+const meltUniforms = {
+  uMouse:    { value: new THREE.Vector3(9999, 9999, 9999) },
+  uTime:     { value: 0 },
+  uRadius:   { value: 1.2 },
+  uStrength: { value: 0.45 },
+};
+
+const meltParsVertex = `
+  uniform vec3 uMouse;
+  uniform float uTime;
+  uniform float uRadius;
+  uniform float uStrength;
+  float liquid(float t) { return t*t*t*(t*(t*6.0-15.0)+10.0); }
+  vec3 melt(vec3 pos, vec3 worldPos) {
+    float dist = distance(worldPos, uMouse);
+    float t = 1.0 - clamp(dist / uRadius, 0.0, 1.0);
+    float influence = liquid(t);
+    float drip = influence * uStrength;
+    pos.y -= drip;
+    float lateral = sin(uTime * 0.8) * influence * 0.06;
+    pos.x += lateral;
+    vec3 dir = worldPos - uMouse;
+    float bulge = influence * 0.08;
+    pos += normalize(dir + 0.001) * bulge;
+    return pos;
+  }
+`;
+const meltVertex = `
+  vec4 meltWorldPos = modelMatrix * vec4(position, 1.0);
+  transformed = melt(transformed, meltWorldPos.xyz);
+`;
+
+function applyMelt(mat) {
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uMouse    = meltUniforms.uMouse;
+    shader.uniforms.uTime     = meltUniforms.uTime;
+    shader.uniforms.uRadius   = meltUniforms.uRadius;
+    shader.uniforms.uStrength = meltUniforms.uStrength;
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>",       `#include <common>\n${meltParsVertex}`)
+      .replace("#include <begin_vertex>", `#include <begin_vertex>\n${meltVertex}`);
+  };
+  mat.needsUpdate = true;
 }
 
-// Initialize the application when DOM is loaded
-let app;
-document.addEventListener('DOMContentLoaded', () => {
-    app = new WebBloomApp();
+const envMap = new THREE.CubeTextureLoader().load([
+  "https://cdn.jsdelivr.net/gh/danielyl123/person@main/environmentMaps/2/px.png",
+  "https://cdn.jsdelivr.net/gh/danielyl123/person@main/environmentMaps/2/nx.png",
+  "https://cdn.jsdelivr.net/gh/danielyl123/person@main/environmentMaps/2/py.png",
+  "https://cdn.jsdelivr.net/gh/danielyl123/person@main/environmentMaps/2/ny.png",
+  "https://cdn.jsdelivr.net/gh/danielyl123/person@main/environmentMaps/2/pz.png",
+  "https://cdn.jsdelivr.net/gh/danielyl123/person@main/environmentMaps/2/nz.png",
+]);
+
+const glassMat = new THREE.MeshPhysicalMaterial({
+  envMap,
+  envMapIntensity: 0.6,
+  metalness: 0,
+  roughness: 0,
+  thickness: 1.1,
+  transmission: 1,
+  ior: 2.1,
+  iridescence: 0.4,
+  iridescenceIOR: 1.2,
+  iridescenceThicknessRange: [100, 700],
+});
+applyMelt(glassMat);
+
+const cube = new THREE.Mesh(new RoundedBoxGeometry(1.6, 1.6, 1.6, 80, 0.1), glassMat);
+cube.position.set(2.5, 0, 0.5);
+scene.add(cube);
+
+// floating accent spheres
+const sphereMat = new THREE.MeshPhysicalMaterial({
+  envMap,
+  envMapIntensity: 0.4,
+  metalness: 0,
+  roughness: 0,
+  thickness: 0.8,
+  transmission: 1,
+  ior: 1.8,
+  color: new THREE.Color(0xa78bfa),
+  iridescence: 0.6,
+});
+applyMelt(sphereMat);
+
+const spheres = [];
+const sphereData = [
+  { pos: [-2.5, 1.2, 0], r: 0.55 },
+  { pos: [-1.5, -1.5, -0.5], r: 0.35 },
+  { pos: [3.5, -1.2, -0.8], r: 0.4 },
+];
+sphereData.forEach(d => {
+  const s = new THREE.Mesh(new THREE.SphereGeometry(d.r, 64, 64), sphereMat.clone());
+  s.position.set(...d.pos);
+  scene.add(s);
+  spheres.push(s);
+});
+
+const fontLoader = new FontLoader();
+fontLoader.load("https://raw.githubusercontent.com/danielyl123/person/refs/heads/main/fonts/helvetiker_regular.typeface.json", (font) => {
+  const textMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 });
+  applyMelt(textMat);
+  const geo = new TextGeometry("WB", { font, size: 0.7, depth: 0.01, curveSegments: 20 });
+  geo.computeBoundingBox();
+  geo.center();
+  const textMesh = new THREE.Mesh(geo, textMat);
+  textMesh.position.set(2.5, 0, 0.85);
+  scene.add(textMesh);
+});
+
+const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -0.5);
+
+window.addEventListener("mousemove", (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObject(cube);
+  if (hits.length > 0) {
+    targetMouse.copy(hits[0].point);
+  } else {
+    const mw = new THREE.Vector3();
+    raycaster.ray.intersectPlane(plane, mw);
+    if (mw) targetMouse.copy(mw);
+  }
+});
+window.addEventListener("mouseleave", () => targetMouse.set(9999, 9999, 9999));
+
+const clock = new THREE.Clock();
+(function tick() {
+  const t = clock.getElapsedTime();
+  meltUniforms.uTime.value = t;
+  currentMouse.lerp(targetMouse, 0.025);
+  meltUniforms.uMouse.value.copy(currentMouse);
+
+  cube.rotation.y = t * 0.2;
+  cube.rotation.x = t * 0.15;
+
+  spheres.forEach((s, i) => {
+    s.position.y = sphereData[i].pos[1] + Math.sin(t * 0.5 + i * 1.2) * 0.15;
+    s.rotation.y = t * 0.3;
+  });
+
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(tick);
+})();
+
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 </script>
+
+<script>
+  // ── NAV scroll behavior
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // ── Mobile menu
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('open');
+    mobileMenu.classList.toggle('open');
+    document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
+  });
+  function closeMobile() {
+    hamburger.classList.remove('open');
+    mobileMenu.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  mobileMenu.addEventListener('click', e => { if (e.target === mobileMenu) closeMobile(); });
+
+  // ── Scroll reveal
+  const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        revealObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+  // ── FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.parentElement;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+</script>
+
 </body>
 </html>
